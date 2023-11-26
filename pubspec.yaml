@@ -1,0 +1,33 @@
+name: files_updater
+version: 1.0.0+1
+publish_to: none
+description: A new Flutter project.
+environment:
+  sdk: ">=3.1.5 <4.0.0"
+
+dependencies:
+  window_size:
+    git:
+      url: https://github.com/google/flutter-desktop-embedding
+      path: plugins/window_size
+  window_manager: ^0.3.7
+  cupertino_icons: ^1.0.2
+  dio: ^4.0.0
+  archive: ^3.1.2
+  # add this line to your dependencies
+  fluttertoast: ^8.2.4
+  file_picker: ^6.1.1
+  google_fonts: ^6.1.0
+  get: 4.6.6
+  flutter:
+    sdk: flutter
+
+dev_dependencies:
+  flutter_lints: 3.0.1
+  flutter_test:
+    sdk: flutter
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/imgs/
