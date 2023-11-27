@@ -2,8 +2,8 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-class HomeHeader extends StatelessWidget {
-  const HomeHeader({super.key});
+class SelectionHeader extends StatelessWidget {
+  const SelectionHeader({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -13,7 +13,7 @@ class HomeHeader extends StatelessWidget {
         children: [
           Flexible(
             child: Text(
-              'Titas Theme Updater',
+              'Selection Phase',
               style: GoogleFonts.inter(
                 fontSize: 30,
                 fontWeight: FontWeight.bold,
