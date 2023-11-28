@@ -11,13 +11,15 @@ import 'package:http/http.dart' as http;
 class Item {
   final String title;
   final String link;
+  final List<String> path;
 
-  Item({required this.title, required this.link});
+  Item({required this.title, required this.link, required this.path});
 
   factory Item.fromJson(Map<String, dynamic> json) {
     return Item(
       title: json['title'],
       link: json['link'],
+      path: json['path'] != null ? List<String>.from(json['path']) : <String>[],
     );
   }
 
@@ -165,58 +167,40 @@ class _UpdateButtonState extends State<UpdateButton> {
     var dir = Directory(widget.controller.text);
     var zipPath = '${dir.path}/file.zip';
     var dio = Dio();
-    Item? item = items.firstWhere((item) => item.title == 'Texture-Effects');
-    var link = item.link;
     try {
-      _log.value +=
-          'Starting download... --- TITAS SKILLS TEXTURES EFFECTS ZIP ---\n';
-      await dio.download(
-        link,
-        zipPath,
-        onReceiveProgress: (received, total) {
-          if (total != -1) {
-            _progress.value = received / total;
+      for (var effect in items) {
+        _log.value +=
+            'Starting download... --- TITAS ${effect.title} ZIP ---\n';
+
+        await dio.download(
+          effect.link,
+          zipPath,
+          onReceiveProgress: (received, total) {
+            if (total != -1) {
+              _progress.value = received / total;
+            }
+          },
+        );
+
+        _log.value +=
+            'Download completed.\nStarting extraction... TITAS ${effect.title} ZIP\n';
+        final bytes = File(zipPath).readAsBytesSync();
+        final archive = ZipDecoder().decodeBytes(bytes);
+
+        var paths = effect.path;
+
+        for (var path in paths) {
+          for (final file in archive) {
+            final filename = '${dir.path}$path${file.name}';
+            if (file.isFile) {
+              final data = file.content as List<int>;
+              File(filename)
+                ..createSync(recursive: true)
+                ..writeAsBytesSync(data);
+            } else {
+              Directory(filename).createSync(recursive: true);
+            }
           }
-        },
-      );
-      _log.value +=
-          'Download completed.\nStarting extraction... TITAS SKILLS TEXTURES EFFECTS ZIP\n';
-
-      final bytes = File(zipPath).readAsBytesSync();
-      final archive = ZipDecoder().decodeBytes(bytes);
-
-      for (final file in archive) {
-        final filename = '${dir.path}/textures/effect/${file.name}';
-        if (file.isFile) {
-          final data = file.content as List<int>;
-          File(filename)
-            ..createSync(recursive: true)
-            ..writeAsBytesSync(data);
-        } else {
-          Directory(filename).createSync(recursive: true);
-        }
-      }
-      for (final file in archive) {
-        final filename = '${dir.path}/textures/effect/skill/${file.name}';
-        if (file.isFile) {
-          final data = file.content as List<int>;
-          File(filename)
-            ..createSync(recursive: true)
-            ..writeAsBytesSync(data);
-        } else {
-          Directory(filename).createSync(recursive: true);
-        }
-      }
-
-      for (final file in archive) {
-        final filename = '${dir.path}/textures/effect/skill/magic/${file.name}';
-        if (file.isFile) {
-          final data = file.content as List<int>;
-          File(filename)
-            ..createSync(recursive: true)
-            ..writeAsBytesSync(data);
-        } else {
-          Directory(filename).createSync(recursive: true);
         }
       }
       _log.value += 'Extraction completed.\n';
@@ -390,11 +374,11 @@ class _UpdateButtonState extends State<UpdateButton> {
                           }
                           try {
                             _isLoading.value = true;
-                            await _downloadAndExtractDataEffects();
+                            // await _downloadAndExtractDataEffects();
                             await _downloadAndExtractTexturesEffect();
-                            await _downloadAndExtractMaps();
-                            await _downloadAndExtractPet();
-                            await deleteGuardAndTransform();
+                            // await _downloadAndExtractMaps();
+                            // await _downloadAndExtractPet();
+                            // await deleteGuardAndTransform();
                             message = "Download and Extraction Completed";
                           } catch (e) {
                             message = e.toString();
