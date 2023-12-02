@@ -1,84 +1,172 @@
 // ignore_for_file: library_private_types_in_public_api
 
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:carousel_slider/carousel_slider.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:http/http.dart' as http;
 
-import 'dart:io';
+class Skills {
+  final String tag;
+  final List<Img> images;
 
-class SelectionPicker extends StatefulWidget {
-  const SelectionPicker({super.key});
+  Skills({required this.tag, required this.images});
 
-  @override
-  _VideoPlayerPageState createState() => _VideoPlayerPageState();
+  factory Skills.fromJson(Map<String, dynamic> json) {
+    var imageList = json['images'] as List;
+    List<Img> images = imageList.map((i) => Img.fromJson(i)).toList();
+    return Skills(
+      tag: json['tag'],
+      images: images,
+    );
+  }
+  static Future<List<Skills>> fetchSkills() async {
+    final response = await http.get(
+        Uri.parse('https://norrisasd.github.io/theme-updater-api/skills.json'));
+
+    if (response.statusCode == 200) {
+      List<dynamic> jsonItems = jsonDecode(response.body);
+      return jsonItems.map((jsonItem) => Skills.fromJson(jsonItem)).toList();
+    } else {
+      throw Exception('Failed to load items');
+    }
+  }
 }
 
-class _VideoPlayerPageState extends State<SelectionPicker> {
-  // late VideoPlayerController _controller;
-  // int? _selectedVideoIndex = 0;
+class Img {
+  final String src;
+  Img({required this.src});
 
-  // final List<String> _videoUrls = [
-  //   'https://example.com/video1.mp4',
-  //   'https://example.com/video2.mp4',
-  //   'https://example.com/video3.mp4',
-  // ];
+  factory Img.fromJson(Map<String, dynamic> json) {
+    return Img(
+      src: json['src'],
+    );
+  }
+}
 
-  // @override
-  // void initState() {
-  //   super.initState();
-  //   _controller =
-  //       VideoPlayerController.network(_videoUrls[_selectedVideoIndex!])
-  //         ..initialize().then((_) {
-  //           setState(() {
-  //             _controller.play();
-  //           });
-  //         });
-  // }
+class SelectionPicker extends StatefulWidget {
+  final List<String> imageList;
+  final List<String> nameList;
 
-  // @override
-  // void dispose() {
-  //   _controller.dispose();
-  //   super.dispose();
-  // }
+  const SelectionPicker({
+    super.key,
+    required this.imageList,
+    required this.nameList,
+  });
 
-  // void _onRadioValueChanged(int? index) {
-  //   setState(() {
-  //     _selectedVideoIndex = index;
-  //     _controller.pause();
-  //     _controller =
-  //         VideoPlayerController.network(_videoUrls[_selectedVideoIndex!])
-  //           ..initialize().then((_) {
-  //             setState(() {
-  //               _controller.play();
-  //             });
-  //           });
-  //   });
-  // }
+  @override
+  _SelectionPickerState createState() => _SelectionPickerState();
+}
+
+class _SelectionPickerState extends State<SelectionPicker> {
+  int _selectedImageIndex = 0;
+
+  CarouselController buttonCarouselController = CarouselController();
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        CarouselSlider(
+          items: widget.imageList
+              .map((item) => Center(
+                  child: Image.asset(item, fit: BoxFit.cover, width: 300)))
+              .toList(),
+          options: CarouselOptions(
+            height: 300,
+            viewportFraction: 0.8,
+            initialPage: 0,
+            enableInfiniteScroll: true,
+            reverse: false,
+            autoPlayInterval: const Duration(seconds: 3),
+            autoPlayAnimationDuration: const Duration(milliseconds: 800),
+            autoPlayCurve: Curves.fastOutSlowIn,
+            enlargeCenterPage: true,
+            enlargeFactor: 0.3,
+            scrollDirection: Axis.horizontal,
+          ),
+          carouselController: buttonCarouselController,
+        ),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            ElevatedButton(
+              onPressed: () => buttonCarouselController.previousPage(
+                  duration: const Duration(milliseconds: 300),
+                  curve: Curves.linear),
+              child: const Text('←'),
+            ),
+            const SizedBox(width: 16),
+            ElevatedButton(
+              onPressed: () => buttonCarouselController.nextPage(
+                  duration: const Duration(milliseconds: 300),
+                  curve: Curves.linear),
+              child: const Text('→'),
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
+        SingleChildScrollView(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: _buildRadioButtons(),
+          ),
+        )
+      ],
+    );
+  }
+
+  List<Widget> _buildRadioButtons() {
+    return widget.nameList.asMap().entries.map((entry) {
+      final index = entry.key;
+      final image = entry.value;
+      // List<Img> images = Skills.;
+      return ListTile(
+        leading: Radio(
+          fillColor: MaterialStateProperty.resolveWith<Color>(
+              (Set<MaterialState> states) {
+            if (states.contains(MaterialState.selected)) {
+              return Colors.white; // The color when the button is selected
+            }
+            return Colors.grey; // The color when the button is unselected
+          }),
+          value: index,
+          groupValue: _selectedImageIndex,
+          onChanged: (value) {
+            setState(() {
+              _selectedImageIndex = value as int;
+            });
+          },
+        ),
+        title: Text(
+          entry.value, // Replace this with your actual text
+          style: GoogleFonts.inter(
+              color: Colors.white), // Replace this with your desired color
+        ),
+      );
+    }).toList();
+  }
+}
+
+class Carousel extends StatelessWidget {
+  final List<String> imageList;
+  final int selectedIndex;
+
+  const Carousel({
+    super.key,
+    required this.imageList,
+    required this.selectedIndex,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Video Player'),
+    return SizedBox(
+      height: 200,
+      child: Image.asset(
+        imageList[selectedIndex],
+        fit: BoxFit.cover,
       ),
-      body: Column(
-          // children: [
-          //   AspectRatio(
-          //     aspectRatio: _controller.value.aspectRatio,
-          //     child: VideoPlayer(_controller),
-          //   ),
-          //   SizedBox(height: 16),
-          //   Row(
-          //     mainAxisAlignment: MainAxisAlignment.center,
-          //     children: List.generate(
-          //       _videoUrls.length,
-          //       (index) => Radio(
-          //         value: index,
-          //         groupValue: _selectedVideoIndex,
-          //         onChanged: _onRadioValueChanged,
-          //       ),
-          //     ),
-          //   ),
-          // ],
-          ),
     );
   }
 }

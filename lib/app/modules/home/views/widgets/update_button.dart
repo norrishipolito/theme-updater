@@ -24,8 +24,8 @@ class Item {
   }
 
   static Future<List<Item>> fetchItems() async {
-    final response = await http.get(Uri.parse(
-        'https://raw.githubusercontent.com/norrisasd/theme-updater/main/links.json'));
+    final response = await http.get(
+        Uri.parse('https://norrisasd.github.io/theme-updater-api/links.json'));
 
     if (response.statusCode == 200) {
       List<dynamic> jsonItems = jsonDecode(response.body);
@@ -70,99 +70,7 @@ class _UpdateButtonState extends State<UpdateButton> {
     setState(() {}); // Call setState to trigger a rebuild of the widget.
   }
 
-  Future<void> _downloadAndExtractMaps() async {
-    _isLoading.value = true;
-    var dir = Directory(widget.controller.text);
-    var zipPath = '${dir.path}/file.zip';
-    var dio = Dio();
-    Item? item = items.firstWhere((item) => item.title == 'Maps');
-    var link = item.link;
-
-    try {
-      _log.value += 'Starting download... --- TITAS MAPS ZIP ---\n';
-      await dio.download(
-        link,
-        zipPath,
-        onReceiveProgress: (received, total) {
-          if (total != -1) {
-            _progress.value = received / total;
-          }
-        },
-      );
-      _log.value +=
-          'Download completed.\nStarting extraction... TITAS MAPS ZIP\n';
-
-      final bytes = File(zipPath).readAsBytesSync();
-      final archive = ZipDecoder().decodeBytes(bytes);
-
-      for (final file in archive) {
-        final filename = '${dir.path}/textures/map/${file.name}';
-        if (file.isFile) {
-          final data = file.content as List<int>;
-          File(filename)
-            ..createSync(recursive: true)
-            ..writeAsBytesSync(data);
-        } else {
-          Directory(filename).createSync(recursive: true);
-        }
-      }
-      _log.value += 'Extraction completed.\n';
-
-      await File(zipPath).delete();
-    } catch (e) {
-      _log.value += 'Error: $e\n';
-    } finally {
-      _isLoading.value = false;
-    }
-  }
-
-  Future<void> _downloadAndExtractDataEffects() async {
-    _isLoading.value = true;
-    var dir = Directory(widget.controller.text);
-    var zipPath = '${dir.path}/file.zip';
-    var dio = Dio();
-    Item? item = items.firstWhere((item) => item.title == 'Data-Effects');
-    var link = item.link;
-    try {
-      _log.value +=
-          'Starting download... --- TITAS SKILLS DATA EFFECTS ZIP ---\n';
-      await dio.download(
-        link,
-        zipPath,
-        onReceiveProgress: (received, total) {
-          if (total != -1) {
-            _progress.value = received / total;
-          }
-        },
-      );
-      _log.value +=
-          'Download completed.\nStarting extraction... TITAS SKILLS DATA EFFECTS ZIP\n';
-
-      final bytes = File(zipPath).readAsBytesSync();
-      final archive = ZipDecoder().decodeBytes(bytes);
-
-      for (final file in archive) {
-        final filename = '${dir.path}/data/effect/${file.name}';
-        if (file.isFile) {
-          final data = file.content as List<int>;
-          File(filename)
-            ..createSync(recursive: true)
-            ..writeAsBytesSync(data);
-        } else {
-          Directory(filename).createSync(recursive: true);
-        }
-      }
-      _log.value += 'Extraction completed.\n';
-
-      await File(zipPath).delete();
-    } catch (e) {
-      _log.value += 'Error: $e\n';
-    } finally {
-      _isLoading.value = false;
-    }
-  }
-
-  Future<void> _downloadAndExtractTexturesEffect() async {
+  Future<void> _downloadAndExtract() async {
     _isLoading.value = true;
     var dir = Directory(widget.controller.text);
     var zipPath = '${dir.path}/file.zip';
@@ -185,74 +93,36 @@ class _UpdateButtonState extends State<UpdateButton> {
         _log.value +=
             'Download completed.\nStarting extraction... TITAS ${effect.title} ZIP\n';
         final bytes = File(zipPath).readAsBytesSync();
-        final archive = ZipDecoder().decodeBytes(bytes);
+        Archive archive = ZipDecoder().decodeBytes(bytes);
 
         var paths = effect.path;
 
         for (var path in paths) {
           for (final file in archive) {
-            final filename = '${dir.path}$path${file.name}';
-            if (file.isFile) {
+            var downloadedFileSplit = file.name.split("/");
+            var downloadedFile = file.name;
+            if (downloadedFileSplit.length == 3) {
+              downloadedFile =
+                  "${downloadedFileSplit[1]}/${downloadedFileSplit[2]}";
+            } else if (downloadedFileSplit.length == 2) {
+              downloadedFile = downloadedFileSplit.last;
+            }
+            // var downloadedFile = file.name.split("/").last;
+            var filename = '${dir.path}$path$downloadedFile';
+            if (file.isFile && !file.name.endsWith('/')) {
               final data = file.content as List<int>;
               File(filename)
                 ..createSync(recursive: true)
                 ..writeAsBytesSync(data);
-            } else {
+              _log.value += 'Extracted to $filename.\n';
+            } else if (file.name.endsWith('/')) {
+              print("WHAAAA");
               Directory(filename).createSync(recursive: true);
             }
           }
         }
       }
       _log.value += 'Extraction completed.\n';
-
-      await File(zipPath).delete();
-    } catch (e) {
-      _log.value += 'Error: $e\n';
-    } finally {
-      _isLoading.value = false;
-    }
-  }
-
-  Future<void> _downloadAndExtractPet() async {
-    _isLoading.value = true;
-    var dir = Directory(widget.controller.text);
-    var zipPath = '${dir.path}/file.zip';
-    var dio = Dio();
-    Item? item = items.firstWhere((item) => item.title == 'Pet');
-    var link = item.link;
-    try {
-      _log.value += 'Starting download... --- TITAS PET ZIP ---\n';
-      await dio.download(
-        link,
-        zipPath,
-        onReceiveProgress: (received, total) {
-          if (total != -1) {
-            _progress.value = received / total;
-          }
-        },
-      );
-      _log.value +=
-          'Download completed.\nStarting extraction... TITAS PET ZIP\n';
-
-      final bytes = File(zipPath).readAsBytesSync();
-      final archive = ZipDecoder().decodeBytes(bytes);
-
-      for (final file in archive) {
-        final filename = '${dir.path}/textures/pet/${file.name}';
-        if (file.isFile) {
-          final data = file.content as List<int>;
-          File(filename)
-            ..createSync(recursive: true)
-            ..writeAsBytesSync(data);
-        } else {
-          Directory(filename).createSync(recursive: true);
-        }
-      }
-
-      // Delete the zip file
-
-      _log.value += 'Extraction completed.\n';
-
       await File(zipPath).delete();
     } catch (e) {
       _log.value += 'Error: $e\n';
@@ -282,6 +152,7 @@ class _UpdateButtonState extends State<UpdateButton> {
 
   @override
   Widget build(BuildContext context) {
+    final ScrollController _controller = ScrollController();
     return Column(
       children: <Widget>[
         TextFormField(
@@ -305,6 +176,11 @@ class _UpdateButtonState extends State<UpdateButton> {
         ValueListenableBuilder<String>(
           valueListenable: _log,
           builder: (context, log, child) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (_controller.hasClients) {
+                _controller.jumpTo(_controller.position.maxScrollExtent);
+              }
+            });
             return Align(
               alignment: Alignment.centerLeft,
               child: FractionallySizedBox(
@@ -312,6 +188,7 @@ class _UpdateButtonState extends State<UpdateButton> {
                 child: SizedBox(
                   height: 200, // Set the height of the container
                   child: SingleChildScrollView(
+                    controller: _controller,
                     child: Text(
                       log,
                       style: GoogleFonts.inter(color: Colors.white),
@@ -374,16 +251,13 @@ class _UpdateButtonState extends State<UpdateButton> {
                           }
                           try {
                             _isLoading.value = true;
-                            // await _downloadAndExtractDataEffects();
-                            await _downloadAndExtractTexturesEffect();
-                            // await _downloadAndExtractMaps();
-                            // await _downloadAndExtractPet();
-                            // await deleteGuardAndTransform();
+                            await _downloadAndExtract();
                             message = "Download and Extraction Completed";
                           } catch (e) {
                             message = e.toString();
                           } finally {
                             _isLoading.value = false;
+                            _log.value += 'Theme Updated successfully\n';
                             final snackBar = SnackBar(
                               content: Text(message),
                               action: SnackBarAction(

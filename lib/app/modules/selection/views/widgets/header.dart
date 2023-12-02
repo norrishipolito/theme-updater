@@ -1,4 +1,3 @@
-import 'package:flutter/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -13,7 +12,7 @@ class SelectionHeader extends StatelessWidget {
         children: [
           Flexible(
             child: Text(
-              'Selection Phase',
+              'Preference',
               style: GoogleFonts.inter(
                 fontSize: 30,
                 fontWeight: FontWeight.bold,

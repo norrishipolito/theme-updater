@@ -11,6 +11,7 @@ dependencies:
       url: https://github.com/google/flutter-desktop-embedding.git
       path: plugins/window_size
   window_manager: ^0.3.7
+  carousel_slider: ^4.2.1
   cupertino_icons: ^1.0.2
   http: ^1.1.0
   dio: ^4.0.0
