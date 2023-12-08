@@ -252,6 +252,7 @@ class _UpdateButtonState extends State<UpdateButton> {
                           try {
                             _isLoading.value = true;
                             await _downloadAndExtract();
+                            await deleteGuardAndTransform();
                             message = "Download and Extraction Completed";
                           } catch (e) {
                             message = e.toString();
