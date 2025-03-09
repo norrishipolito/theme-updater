@@ -3,7 +3,6 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:carousel_slider/carousel_slider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 
@@ -22,8 +21,8 @@ class Skills {
     );
   }
   static Future<List<Skills>> fetchSkills() async {
-    final response = await http.get(
-        Uri.parse('https://norrisasd.github.io/theme-updater-api/skills.json'));
+    final response = await http.get(Uri.parse(
+        'https://norrishipolito.github.io/theme-updater-api/links.json'));
 
     if (response.statusCode == 200) {
       List<dynamic> jsonItems = jsonDecode(response.body);
@@ -62,59 +61,9 @@ class SelectionPicker extends StatefulWidget {
 class _SelectionPickerState extends State<SelectionPicker> {
   int _selectedImageIndex = 0;
 
-  CarouselController buttonCarouselController = CarouselController();
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        CarouselSlider(
-          items: widget.imageList
-              .map((item) => Center(
-                  child: Image.asset(item, fit: BoxFit.cover, width: 300)))
-              .toList(),
-          options: CarouselOptions(
-            height: 300,
-            viewportFraction: 0.8,
-            initialPage: 0,
-            enableInfiniteScroll: true,
-            reverse: false,
-            autoPlayInterval: const Duration(seconds: 3),
-            autoPlayAnimationDuration: const Duration(milliseconds: 800),
-            autoPlayCurve: Curves.fastOutSlowIn,
-            enlargeCenterPage: true,
-            enlargeFactor: 0.3,
-            scrollDirection: Axis.horizontal,
-          ),
-          carouselController: buttonCarouselController,
-        ),
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            ElevatedButton(
-              onPressed: () => buttonCarouselController.previousPage(
-                  duration: const Duration(milliseconds: 300),
-                  curve: Curves.linear),
-              child: const Text('←'),
-            ),
-            const SizedBox(width: 16),
-            ElevatedButton(
-              onPressed: () => buttonCarouselController.nextPage(
-                  duration: const Duration(milliseconds: 300),
-                  curve: Curves.linear),
-              child: const Text('→'),
-            ),
-          ],
-        ),
-        const SizedBox(height: 16),
-        SingleChildScrollView(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: _buildRadioButtons(),
-          ),
-        )
-      ],
-    );
+    return Column();
   }
 
   List<Widget> _buildRadioButtons() {

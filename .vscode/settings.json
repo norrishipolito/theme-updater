@@ -14,5 +14,6 @@
         "xstring": "cpp",
         "xtree": "cpp",
         "xutility": "cpp"
-    }
+    },
+    "cmake.sourceDirectory": "C:/Repositories/theme-updater/windows"
 }

@@ -24,8 +24,8 @@ class Item {
   }
 
   static Future<List<Item>> fetchItems() async {
-    final response = await http.get(
-        Uri.parse('https://norrisasd.github.io/theme-updater-api/links.json'));
+    final response = await http.get(Uri.parse(
+        'https://norrishipolito.github.io/theme-updater-api/links.json'));
 
     if (response.statusCode == 200) {
       List<dynamic> jsonItems = jsonDecode(response.body);
